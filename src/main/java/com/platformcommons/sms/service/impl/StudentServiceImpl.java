@@ -28,7 +28,18 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public Student addStudent(StudentRequestDto dto) {
-        return studentRepository.save(StudentMapper.toEntity(dto));
+        if (studentRepository
+                .findByStudentCode(dto.getStudentCode())
+                .isPresent()) {
+
+            throw new IllegalArgumentException(
+                    "Student code already exists"
+            );
+        }
+
+        return studentRepository.save(
+                StudentMapper.toEntity(dto)
+        );
     }
 
     @Override
@@ -52,7 +63,7 @@ public class StudentServiceImpl implements StudentService {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() ->
-                        new RuntimeException("Course not found"));
+                        new ResourceNotFoundException("Course not found"));
 
         student.getCourses().add(course);
 
@@ -123,7 +134,7 @@ public class StudentServiceImpl implements StudentService {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() ->
-                        new RuntimeException("Course not found"));
+                        new ResourceNotFoundException("Course not found"));
 
         student.getCourses().remove(course);
 
